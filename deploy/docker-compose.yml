@@ -1,0 +1,99 @@
+version: '3.1'
+
+networks:
+  beacon-priv:
+  idp-priv:
+  pub:
+
+services:
+
+  ###########################################
+  # MongoDB Database
+  ###########################################
+
+  db-cancer:
+    image: mongo:5
+    command: mongod --port 27018
+    hostname: mongo
+    ports:
+      - 27018:27018
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: beacon
+    volumes:
+      - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+    networks:
+      - beacon-priv
+
+
+  #mongo-express-cancer:
+  #  image: mongo-express
+  #  restart: always
+  #  ports:
+  #    - 8081:8081
+  #  environment:
+  #    ME_CONFIG_MONGODB_ADMINUSERNAME: root
+  #    ME_CONFIG_MONGODB_ADMINPASSWORD: example
+  #    ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27018/
+  #  networks:
+  #    - beacon-priv
+
+  ###########################################
+  # Beacon
+  ###########################################
+
+  beacon-cancer:
+    build: ..
+    image: egarchive/beacon:2.0
+    hostname: beacon-cancer
+    container_name: beacon-cancer
+    volumes:
+      # - ../beacon:/beacon/beacon  # inject the code, so we see the modifications "live"
+      # - ../ui/static:/beacon/ui/static
+      # - ../ui/templates:/beacon/ui/templates
+      - ./conf.py:/beacon/beacon/conf.py
+      - ./logger.yml:/beacon/beacon/logger.yml
+      - ./ontologies:/beacon/ontologies
+    ports:
+      - "28743:5050"
+    networks:
+      - beacon-priv
+      - pub
+      - idp-priv
+    working_dir: '/beacon'
+    entrypoint: ['python','-m','beacon']
+    # entrypoint: ['/bin/sleep','100000000']
+
+  ###########################################
+  # Dummy Permissions server
+  ###########################################
+  
+  permissions-cancer:
+    image: egarchive/beacon:2.0
+    hostname: beacon-permissions-cancer
+    container_name: beacon-permissions-cancer
+    volumes:
+      - ../permissions/:/beacon/permissions/  # inject the code, so we see the modifications "live"
+      - ./logger.yml:/beacon/logger.yml
+    ports:
+      - "5053:5051"
+    networks:
+      - beacon-priv
+      - pub
+      - idp-priv
+    #entrypoint: ['/bin/sleep','100000000']
+    working_dir: '/beacon'
+    entrypoint: ['python','-m', 'permissions']
+
+  frontend-cancer:
+    build:
+      context: ../frontend-cancer
+    #command: ["yarn"]
+    command: node /opt/yarn-v1.22.19/bin/yarn.js start
+    container_name: react-cancer
+    ports:
+      - 28744:3001
+    volumes:
+      - ../frontend-cancer:/usr/src/app
+
