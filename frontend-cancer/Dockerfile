@@ -1,15 +1,42 @@
-FROM node:20
+# client/Dockerfile
 
-WORKDIR /usr/src/app
+# --- stage 1: build React app ---
 
-ENV PATH=/usr/src/app/node_modules/.bin:$PATH
+    FROM node:22.19.0 AS build
 
-COPY package.json yarn.lock ./
-
-RUN yarn install --frozen-lockfile
-
-COPY . .
-
-EXPOSE 3001
-
-CMD ["yarn", "start"]
+    # set working directory
+    WORKDIR ./frontend-cancer
+    
+    # add /client/node_modules/.bin to $PATH
+    ENV PATH /frontend-cancer/node_modules/.bin:$PATH
+    
+    # install app dependencies
+    COPY package.json .
+    COPY yarn.lock .
+    COPY public ./public
+    COPY src ./src
+    # COPY backend ./backend
+    # COPY backend/.env ./backend
+    
+    RUN yarn config set network-timeout 600000 -g \
+    && yarn install --frozen-lockfile
+    
+    # create the production build
+    RUN yarn build
+    
+    
+    # --- stage 2: serve production app with Nginx ---
+    
+    FROM nginx:1.27-alpine
+    
+    # replace default Nginx configuration with ours
+    RUN rm -f /etc/nginx/conf.d/default.conf
+    COPY nginx.conf /etc/nginx/conf.d/default.conf
+    
+    # copy the React production build from stage 1
+    COPY --from=build /client/build /usr/share/nginx/html
+    
+    # ensure runtime config directory exists
+    RUN mkdir -p /usr/share/nginx/html/config
+    
+    EXPOSE 80

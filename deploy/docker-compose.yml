@@ -88,8 +88,6 @@ services:
   frontend-cancer:
     build:
       context: ../frontend-cancer
-    #command: ["yarn"]
-    command: ["yarn", "start"]
     container_name: react-cancer
     ports:
       - 28744:3001
