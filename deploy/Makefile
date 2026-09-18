@@ -1,9 +1,17 @@
 all: down up load reindex rebuild
 
 load:
-	mongoimport --jsonArray --uri "mongodb://root:example@127.0.0.1:27018/beacon?authSource=admin" --file data/datasets*.json --collection datasets
-	mongoimport --jsonArray --uri "mongodb://root:example@127.0.0.1:27018/beacon?authSource=admin" --file data/individuals*.json --collection individuals
-	docker exec beacon python beacon/db/extract_filtering_terms.py
+	docker exec -i registriesdb mongoimport \
+	--jsonArray \
+	--uri "mongodb://root:example@127.0.0.1:27017/beacon?authSource=admin" \
+	--file /data/datasets.json \
+	--collection datasets
+	docker exec -i registriesdb mongoimport \
+	--jsonArray \
+	--uri "mongodb://root:example@127.0.0.1:27017/beacon?authSource=admin" \
+	--file /data/individuals.json \
+	--collection individuals
+	docker exec beacon-cancer python beacon/db/extract_filtering_terms.py
 
 up-db:
 	docker-compose up -d db && \

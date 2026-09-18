@@ -25,7 +25,7 @@ ONTOLOGY_REGEX = re.compile(r"([_A-Za-z0-9]+):([_A-Za-z0-9^\-]+)")
 
 client = MongoClient(
     #"mongodb://127.0.0.1:27018/"
-    "mongodb://root:example@mongo:27018/beacon?authSource=admin"
+    "mongodb://root:example@mongo:27017/beacon?authSource=admin"
 
 )
 

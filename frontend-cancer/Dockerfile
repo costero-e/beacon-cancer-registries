@@ -1,12 +1,15 @@
-FROM node:22.0-alpine
+FROM node:20
 
-# set working directory
 WORKDIR /usr/src/app
 
-# add _/usr/src/app/node_modules/.bin_ to $PATH
-ENV PATH /usr/src/app/node_modules/.bin:$PATH
+ENV PATH=/usr/src/app/node_modules/.bin:$PATH
 
-# install app dependencies
+COPY package.json yarn.lock ./
+
+RUN yarn install --frozen-lockfile
+
 COPY . .
 
-RUN yarn install --production
+EXPOSE 3001
+
+CMD ["yarn", "start"]

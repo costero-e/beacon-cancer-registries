@@ -13,16 +13,15 @@ services:
 
   db-cancer:
     image: mongo:5
-    command: mongod --port 27018
     hostname: mongo
-    ports:
-      - 27018:27018
+    container_name: registriesdb
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
       MONGO_INITDB_DATABASE: beacon
     volumes:
       - ./mongo-init/:/docker-entrypoint-initdb.d/:ro
+      - ./data/:/data
     networks:
       - beacon-priv
 
@@ -90,7 +89,7 @@ services:
     build:
       context: ../frontend-cancer
     #command: ["yarn"]
-    command: node /opt/yarn-v1.22.19/bin/yarn.js start
+    command: ["yarn", "start"]
     container_name: react-cancer
     ports:
       - 28744:3001

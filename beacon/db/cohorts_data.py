@@ -16,7 +16,7 @@ def get_count(collection, query: dict) -> int:
 
 client = MongoClient(
     #"mongodb://127.0.0.1:27018/"
-    "mongodb://root:example@mongo:27018/beacon?authSource=admin"
+    "mongodb://root:example@mongo:27017/beacon?authSource=admin"
 
 )
 
